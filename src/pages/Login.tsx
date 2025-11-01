@@ -29,15 +29,17 @@ const Login = () => {
 
       if (error) throw error;
 
-      // Get user role - using maybeSingle() instead of single() to handle missing roles
-      const { data: roleData, error: roleError } = await supabase
+      // Get user role from user_roles table
+      const { data: roleData } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', data.user.id)
         .maybeSingle();
 
+      let userRole = roleData?.role;
+
       // If no role found, create a default patient role
-      if (!roleData) {
+      if (!userRole) {
         const { error: insertError } = await supabase
           .from('user_roles')
           .insert({
@@ -48,6 +50,7 @@ const Login = () => {
         if (insertError) {
           console.error('Error creating role:', insertError);
         }
+        userRole = 'patient';
       }
 
       // Also create profile if it doesn't exist
@@ -65,8 +68,6 @@ const Login = () => {
           mobile: data.user.user_metadata?.mobile || '',
         });
       }
-
-      const userRole = roleData?.role || 'patient';
 
       toast({
         title: "Login successful",

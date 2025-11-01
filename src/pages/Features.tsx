@@ -1,9 +1,22 @@
 import { Card } from "@/components/ui/card";
-import { Bell, FileText, MessageSquare, Activity, Clock, Users } from "lucide-react";
+import {
+  Bell,
+  FileText,
+  MessageSquare,
+  Activity,
+  Clock,
+  Users,
+} from "lucide-react";
+
 import featureReminders from "@/assets/feature-reminders.png";
 import featureDigital from "@/assets/feature-digital.png";
 import featureAI from "@/assets/feature-ai.png";
-import placeholder from "/placeholder.svg";
+        
+// ✅ Make sure these image files exist in `src/assets/`
+import activity1 from "@/assets/1.png";
+import clock1 from "@/assets/Clock1.jpg";  // ensure lowercase filename
+import user1 from "@/assets/User1.jpg";    // ensure lowercase filename
+
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 
@@ -12,43 +25,49 @@ const Features = () => {
     {
       icon: Bell,
       title: "Automated Reminders",
-      description: "WhatsApp & IVR medicine reminders ensure patients never miss a dose",
+      description:
+        "WhatsApp & IVR medicine reminders ensure patients never miss a dose",
       image: featureReminders,
       color: "bg-primary/10 text-primary",
     },
     {
       icon: FileText,
       title: "Digital Prescriptions",
-      description: "Paperless prescriptions with complete medication tracking and history",
+      description:
+        "Paperless prescriptions with complete medication tracking and history",
       image: featureDigital,
       color: "bg-secondary/10 text-secondary",
     },
     {
       icon: MessageSquare,
       title: "AI Health Assistant",
-      description: "Multilingual AI support for medicine queries and health guidance",
+      description:
+        "Multilingual AI support for medicine queries and health guidance",
       image: featureAI,
       color: "bg-primary/10 text-primary",
     },
     {
       icon: Activity,
       title: "Compliance Tracking",
-      description: "Real-time monitoring of patient adherence to treatment plans",
-      image: placeholder,
+      description:
+        "Real-time monitoring of patient adherence to treatment plans",
+      image: activity1,
       color: "bg-secondary/10 text-secondary",
     },
     {
       icon: Clock,
       title: "Follow-up Management",
-      description: "Automated appointment reminders and doctor-patient communication",
-      image: placeholder,
+      description:
+        "Automated appointment reminders and doctor-patient communication",
+      image: clock1,
       color: "bg-primary/10 text-primary",
     },
     {
       icon: Users,
       title: "Care Team Coordination",
-      description: "Seamless collaboration between doctors, nurses, and care managers",
-      image: placeholder,
+      description:
+        "Seamless collaboration between doctors, nurses, and care managers",
+      image: user1,
       color: "bg-secondary/10 text-secondary",
     },
   ];
@@ -68,7 +87,8 @@ const Features = () => {
               Complete Patient Care Solution
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              From hospital discharge to complete recovery, we ensure continuous care and monitoring
+              From hospital discharge to complete recovery, we ensure continuous
+              care and monitoring
             </p>
           </div>
 
@@ -77,7 +97,7 @@ const Features = () => {
             {features.map((feature, index) => (
               <Card
                 key={index}
-                className="p-6 hover:shadow-[var(--shadow-lg)] transition-all duration-300 hover:-translate-y-1 border-border/50 bg-card"
+                className="p-6 hover:shadow-[var(--shadow-lg)] transition-all duration-300 hover:-translate-y-1 border border-border/50 bg-card"
               >
                 <div className="space-y-4">
                   {/* Icon or Image */}
@@ -87,18 +107,25 @@ const Features = () => {
                         src={feature.image}
                         alt={feature.title}
                         className="w-3/4 h-3/4 object-contain"
+                        loading="lazy"
                       />
                     </div>
                   ) : (
-                    <div className={`w-12 h-12 rounded-lg ${feature.color} flex items-center justify-center`}>
+                    <div
+                      className={`w-12 h-12 rounded-lg ${feature.color} flex items-center justify-center`}
+                    >
                       <feature.icon className="w-6 h-6" />
                     </div>
                   )}
 
                   {/* Content */}
                   <div>
-                    <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-                    <p className="text-muted-foreground">{feature.description}</p>
+                    <h3 className="text-xl font-bold mb-2">
+                      {feature.title}
+                    </h3>
+                    <p className="text-muted-foreground">
+                      {feature.description}
+                    </p>
                   </div>
                 </div>
               </Card>
