@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Shield, Menu, LogOut, User } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -95,13 +95,13 @@ const Navigation = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link to="/features" className="text-sm font-medium hover:text-primary transition-colors">
               Features
-            </a>
-            <a href="#about" className="text-sm font-medium hover:text-primary transition-colors">
+            </Link>
+            <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">
               About
-            </a>
-            <a href="#contact" className="text-sm font-medium hover:text-primary transition-colors">
+            </Link>
+            <a href="/Contact" className="text-sm font-medium hover:text-primary transition-colors">
               Contact
             </a>
           </div>
@@ -152,15 +152,15 @@ const Navigation = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-border">
             <div className="flex flex-col gap-4">
-              <a href="#features" className="text-sm font-medium hover:text-primary transition-colors">
+              <Link to="/features" className="text-sm font-medium hover:text-primary transition-colors">
                 Features
-              </a>
-              <a href="#about" className="text-sm font-medium hover:text-primary transition-colors">
+              </Link>
+              <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">
                 About
-              </a>
-              <a href="#contact" className="text-sm font-medium hover:text-primary transition-colors">
+              </Link>
+              <Link to="/Contact" className="text-sm font-medium hover:text-primary transition-colors">
                 Contact
-              </a>
+              </Link>
               <div className="flex flex-col gap-2 pt-4 border-t border-border">
                 {user ? (
                   <>

@@ -1,1 +1,10 @@
 project_id = "hrsqndpdcacajdjjkdvg"
+
+[auth]
+enable_signup = true
+enable_confirmations = false
+
+[auth.email]
+enable_signup = true
+enable_confirmations = false
+autoconfirm = true

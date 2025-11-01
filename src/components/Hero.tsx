@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Heart, Shield, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-medical.jpg";
 
 const Hero = () => {
+  const navigate = useNavigate();
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background with overlay */}
@@ -45,12 +47,17 @@ const Hero = () => {
               variant="hero" 
               size="xl" 
               className="bg-white text-primary hover:bg-white/90 hover:text-primary"
-              onClick={() => window.location.href = '/reception'}
+              onClick={() => navigate('/login')}
             >
               Reception Dashboard
               <ArrowRight className="w-5 h-5" />
             </Button>
-            <Button variant="hero" size="xl" className="bg-transparent border-2 border-white text-white hover:bg-white/10">
+            <Button 
+              variant="hero" 
+              size="xl" 
+              className="bg-transparent border-2 border-white text-white hover:bg-white/10"
+              onClick={() => navigate('/features')}
+            >
               Learn More
             </Button>
           </div>

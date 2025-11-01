@@ -10,7 +10,7 @@ import { Plus, Search, Download, Upload, Users, UserPlus, Filter, Calendar, Send
 import PatientTable from "@/components/reception/PatientTable";
 import AddPatientDialog from "@/components/reception/AddPatientDialog";
 import type { Patient } from "@/types/database";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext"; 
 
 const Reception = () => {
   const navigate = useNavigate();

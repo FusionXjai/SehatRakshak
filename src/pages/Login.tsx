@@ -75,6 +75,9 @@ const Login = () => {
 
       // Redirect based on role
       switch (userRole) {
+        case 'superadmin':
+          navigate('/admin');
+          break;
         case 'receptionist':
           navigate('/reception');
           break;
@@ -82,7 +85,10 @@ const Login = () => {
           navigate('/doctor');
           break;
         case 'hospitaladmin':
-          navigate('/admin');
+          navigate('/hospital-admin');
+          break;
+        case 'caremanager':
+          navigate('/caremanager');
           break;
         case 'patient':
           navigate('/patient');

@@ -15,8 +15,12 @@ import DoctorDashboard from "./pages/DoctorDashboard";
 import PatientDashboard from "./pages/PatientDashboard";
 import CareManagerDashboard from "./pages/CareManagerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import HospitalAdminDashboard from "./pages/HospitalAdminDashboard";
 import NewPrescription from "./pages/NewPrescription";
 import NotFound from "./pages/NotFound";
+import About from "./pages/about";
+import Features from "./components/Features";
+import Contact from "./pages/Contact";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +35,9 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/features" element={<Features />} />
+            <Route path="/Contact" element={<Contact/>} />
             <Route
               path="/doctor"
               element={
@@ -68,6 +75,14 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={['hospitaladmin', 'superadmin']}>
                   <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/hospital-admin"
+              element={
+                <ProtectedRoute allowedRoles={['hospitaladmin']}>
+                  <HospitalAdminDashboard />
                 </ProtectedRoute>
               }
             />

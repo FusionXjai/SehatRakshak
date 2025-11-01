@@ -178,7 +178,6 @@ const Signup = () => {
                   <SelectItem value="receptionist">Receptionist</SelectItem>
                   <SelectItem value="caremanager">Care Manager</SelectItem>
                   <SelectItem value="hospitaladmin">Hospital Admin</SelectItem>
-                  <SelectItem value="superadmin">Super Admin</SelectItem>
                 </SelectContent>
               </Select>
             </div>

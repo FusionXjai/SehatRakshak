@@ -34,30 +34,29 @@ const Features = () => {
       icon: Activity,
       title: "Compliance Tracking",
       description: "Real-time monitoring of patient adherence to treatment plans",
-      image: null,
+      image: placeholder,
       color: "bg-secondary/10 text-secondary",
     },
     {
       icon: Clock,
       title: "Follow-up Management",
       description: "Automated appointment reminders and doctor-patient communication",
-      image: null,
+      image: placeholder,
       color: "bg-primary/10 text-primary",
     },
     {
       icon: Users,
       title: "Care Team Coordination",
       description: "Seamless collaboration between doctors, nurses, and care managers",
-      image: null,
+      image: placeholder,
       color: "bg-secondary/10 text-secondary",
     },
   ];
 
   return (
-    <div className="min-h-screen">
+    <div>
       <Navigation />
-      <div className="pt-16">
-        <section className="py-20 px-6 bg-muted/30">
+      <section className="py-20 px-6 bg-muted/30">
         <div className="container mx-auto max-w-7xl">
           {/* Section Header */}
           <div className="text-center mb-16">
@@ -91,10 +90,8 @@ const Features = () => {
                       />
                     </div>
                   ) : (
-                    <div className="w-full aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-primary/5 to-secondary/5 flex items-center justify-center">
-                      <div className={`w-20 h-20 rounded-full ${feature.color} flex items-center justify-center`}>
-                        <feature.icon className="w-10 h-10" />
-                      </div>
+                    <div className={`w-12 h-12 rounded-lg ${feature.color} flex items-center justify-center`}>
+                      <feature.icon className="w-6 h-6" />
                     </div>
                   )}
 
@@ -109,7 +106,6 @@ const Features = () => {
           </div>
         </div>
       </section>
-      </div>
       <Footer />
     </div>
   );
