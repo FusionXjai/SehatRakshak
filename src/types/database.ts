@@ -99,3 +99,14 @@ export interface Reminder {
   created_at: string;
   updated_at: string;
 }
+
+export interface AIInteraction {
+  id: string;
+  patient_id?: string;
+  query: string;
+  response: string;
+  is_red_flag: boolean;
+  language: string;
+  created_at: string;
+  updated_at: string;
+}

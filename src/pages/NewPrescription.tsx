@@ -10,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { generatePrescriptionPDF, downloadPDF } from "@/lib/pdfGenerator";
+import { generatePrescriptionPDF, downloadPDF, getPDFDataURL } from "@/lib/pdfGenerator";
+import { sendPrescriptionEmail } from "@/lib/emailService";
 import { ArrowLeft, Plus, Trash2, Loader2, Download, Share2, AlertTriangle } from "lucide-react";
 import type { Patient, Medication } from "@/types/database";
 
@@ -232,6 +233,64 @@ const NewPrescription = () => {
       setCreatedPrescriptionId(prescription.id);
       setDuplicateWarnings([]);
 
+      // Send prescription email with PDF (non-blocking)
+      if (patient.email) {
+        // Generate PDF data
+        const pdfData = {
+          patientName: patient.full_name,
+          patientMRN: patient.mrn,
+          patientAge: new Date().getFullYear() - new Date(patient.date_of_birth).getFullYear(),
+          patientGender: patient.gender,
+          patientMobile: patient.mobile,
+          doctorName: doctorName,
+          diagnosis: formData.diagnosis,
+          notes: formData.notes,
+          prescriptionDate: new Date().toISOString().split('T')[0],
+          followUpDate: formData.follow_up_date,
+          medications: medications.map(med => ({
+            medicine_name: med.medicine_name,
+            dosage: med.dosage,
+            frequency: med.frequency,
+            timing: med.timing,
+            duration_days: med.duration_days,
+            instructions: med.instructions,
+          })),
+        };
+
+        const pdf = generatePrescriptionPDF(pdfData);
+        const pdfBase64 = getPDFDataURL(pdf);
+
+        sendPrescriptionEmail(
+          {
+            full_name: patient.full_name,
+            email: patient.email,
+            mrn: patient.mrn
+          },
+          {
+            diagnosis: formData.diagnosis,
+            medications: medications.map(med => ({
+              medicine_name: med.medicine_name,
+              dosage: med.dosage,
+              frequency: med.frequency,
+              timing: med.timing,
+              duration_days: med.duration_days
+            })),
+            prescription_date: new Date().toISOString(),
+            notes: formData.notes
+          },
+          doctorName,
+          pdfBase64
+        ).then(() => {
+          toast({
+            title: "Email Sent",
+            description: `Prescription emailed to ${patient.email}`,
+          });
+        }).catch(error => {
+          console.error('Failed to send prescription email:', error);
+          // Don't block the flow if email fails
+        });
+      }
+
       // Don't navigate immediately - allow PDF download
       // navigate('/doctor');
     } catch (error: any) {
@@ -307,7 +366,22 @@ Thank you!`;
       `${i + 1}. ${med.medicine_name} - ${med.dosage} - ${med.frequency} - ${med.timing} (${med.duration_days} days)`
     ).join('\\n');
     
-    const bodyText = `Dear ${patient.full_name},\n\nYour prescription has been created.\n\nDiagnosis: ${formData.diagnosis}\n\nMedications:\n${medicationsList}\n\nClinical Notes: ${formData.notes || 'N/A'}\n\nFollow-up Date: ${formData.follow_up_date ? new Date(formData.follow_up_date).toLocaleDateString() : 'Not scheduled'}\n\nBest regards,\nDr. ${doctorName}\nSehat Rakshak`;
+    const bodyText = `Dear ${patient.full_name},
+
+Your prescription has been created.
+
+Diagnosis: ${formData.diagnosis}
+
+Medications:
+${medicationsList}
+
+Clinical Notes: ${formData.notes || 'N/A'}
+
+Follow-up Date: ${formData.follow_up_date ? new Date(formData.follow_up_date).toLocaleDateString() : 'Not scheduled'}
+
+Best regards,
+Dr. ${doctorName}
+Sehat Rakshak`;
     
     const emailUrl = `mailto:${patient.email || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
     window.location.href = emailUrl;

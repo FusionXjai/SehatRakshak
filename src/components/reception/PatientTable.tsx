@@ -4,16 +4,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Eye, Edit, QrCode, User } from "lucide-react";
+import { Eye, Edit, QrCode, User, Send, Bell } from "lucide-react";
 import type { Patient } from "@/types/database";
 
 interface PatientTableProps {
   patients: Patient[];
   isLoading: boolean;
   onRefresh: () => void;
+  onWhatsAppClick?: (patient: Patient) => void;
+  onReminderClick?: (patient: Patient) => void;
 }
 
-const PatientTable = ({ patients, isLoading, onRefresh }: PatientTableProps) => {
+const PatientTable = ({ patients, isLoading, onRefresh, onWhatsAppClick, onReminderClick }: PatientTableProps) => {
   const navigate = useNavigate();
 
   const getAgeFromDOB = (dob: string) => {
@@ -80,6 +82,26 @@ const PatientTable = ({ patients, isLoading, onRefresh }: PatientTableProps) => 
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
+                  {onWhatsAppClick && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onWhatsAppClick(patient)}
+                      title="Send WhatsApp Confirmation"
+                    >
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  )}
+                  {onReminderClick && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onReminderClick(patient)}
+                      title="Send Manual Reminder"
+                    >
+                      <Bell className="w-4 h-4" />
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="ghost"

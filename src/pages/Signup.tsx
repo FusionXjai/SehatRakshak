@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Mail, Lock, User, Phone, Heart } from "lucide-react";
+import { sendWelcomeEmail } from "@/lib/emailService";
 import type { AppRole } from "@/types/database";
 
 const Signup = () => {
@@ -64,6 +65,17 @@ const Signup = () => {
 
       if (authError) throw authError;
       if (!authData.user) throw new Error("User creation failed");
+
+      // Send welcome email (non-blocking)
+      sendWelcomeEmail({
+        recipientEmail: formData.email,
+        recipientName: formData.fullName,
+        recipientRole: formData.role,
+        loginUrl: `${window.location.origin}/login`
+      }).catch(error => {
+        console.error('Failed to send welcome email:', error);
+        // Don't show error to user - email failure shouldn't block signup
+      });
 
       toast({
         title: "Account created successfully!",

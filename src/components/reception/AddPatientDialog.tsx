@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { sendPatientWelcomeEmail } from "@/lib/emailService";
 import { Upload, Loader2 } from "lucide-react";
 
 interface AddPatientDialogProps {
@@ -76,7 +77,9 @@ const AddPatientDialog = ({ open, onOpenChange, onSuccess, autoAssignDoctorId }:
       const doctorsWithProfiles = doctorsData.map((doctor: any) => {
         const profile = profilesData?.find((p) => p.id === doctor.user_id);
         return {
-          ...doctor,
+          id: doctor.id,
+          user_id: doctor.user_id, // This is what should be saved as assigned_doctor_id
+          specialization: doctor.specialization,
           profiles: profile,
         };
       });
@@ -151,9 +154,39 @@ const AddPatientDialog = ({ open, onOpenChange, onSuccess, autoAssignDoctorId }:
       }
 
       console.log('Final patient data:', patientData);
-      const { error } = await supabase.from('patients').insert(patientData);
+      const { data: insertedPatient, error } = await supabase
+        .from('patients')
+        .insert(patientData)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      // Send welcome email to patient (non-blocking)
+      if (formData.email && insertedPatient) {
+        // Get doctor info for email
+        const assignedDoctor = doctors.find(d => d.user_id === formData.assigned_doctor_id);
+        
+        sendPatientWelcomeEmail(
+          {
+            full_name: formData.full_name,
+            email: formData.email,
+            mobile: formData.mobile,
+            mrn: insertedPatient.mrn,
+            qr_code_id: insertedPatient.qr_code_id
+          },
+          {
+            name: assignedDoctor?.profiles?.full_name || 'Hospital Staff',
+            specialization: assignedDoctor?.specialization
+          }
+        ).catch(error => {
+          console.error('Failed to send patient welcome email:', error);
+          // Don't show error to user - email failure shouldn't block patient creation
+        });
+      }
 
       toast({
         title: "Success",
@@ -163,9 +196,29 @@ const AddPatientDialog = ({ open, onOpenChange, onSuccess, autoAssignDoctorId }:
       onSuccess();
       resetForm();
     } catch (error: any) {
+      console.error('Error details:', error);
+      
+      let errorMessage = error.message;
+      
+      // Handle specific error cases
+      if (error.code === '23505') {
+        // Unique constraint violation
+        if (error.message.includes('mobile')) {
+          errorMessage = 'A patient with this mobile number already exists';
+        } else if (error.message.includes('email')) {
+          errorMessage = 'A patient with this email already exists';
+        } else if (error.message.includes('mrn')) {
+          errorMessage = 'Medical Record Number conflict. Please try again';
+        } else {
+          errorMessage = 'This patient information already exists in the system';
+        }
+      } else if (error.code === '42501') {
+        errorMessage = 'Permission denied. Please check your access rights';
+      }
+      
       toast({
         title: "Error adding patient",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -285,7 +338,7 @@ const AddPatientDialog = ({ open, onOpenChange, onSuccess, autoAssignDoctorId }:
                   <SelectContent>
                     <SelectItem value="none">No Doctor</SelectItem>
                     {doctors.map((doctor) => (
-                      <SelectItem key={doctor.id} value={doctor.id}>
+                      <SelectItem key={doctor.id} value={doctor.user_id}>
                         {doctor.profiles?.full_name} - {doctor.specialization}
                       </SelectItem>
                     ))}

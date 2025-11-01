@@ -6,14 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, Download, Upload, Users, UserPlus, Filter } from "lucide-react";
+import { Plus, Search, Download, Upload, Users, UserPlus, Filter, Calendar, Send, Bell, LogOut } from "lucide-react";
 import PatientTable from "@/components/reception/PatientTable";
 import AddPatientDialog from "@/components/reception/AddPatientDialog";
 import type { Patient } from "@/types/database";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Reception = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signOut } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -21,6 +23,8 @@ const Reception = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [appointmentsToday, setAppointmentsToday] = useState(0);
+  const [dischargesToday, setDischargesToday] = useState(0);
 
   useEffect(() => {
     fetchPatients();
@@ -184,6 +188,44 @@ const Reception = () => {
     }
   };
 
+  const sendWhatsAppConfirmation = (patient: Patient) => {
+    const message = `Hello ${patient.full_name},
+
+Your appointment has been confirmed.
+
+MRN: ${patient.mrn}
+Date: ${new Date().toLocaleDateString()}
+
+Thank you,
+Sehat Rakshak Team`;
+    const whatsappUrl = `https://wa.me/${patient.mobile.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    
+    toast({
+      title: "WhatsApp Opened",
+      description: "Send confirmation message to patient",
+    });
+  };
+
+  const sendManualReminder = (patient: Patient) => {
+    const message = `Hello ${patient.full_name},
+
+This is a reminder about your medication schedule.
+
+Please ensure you take your medicines on time.
+
+For any queries, contact us.
+
+Sehat Rakshak Team`;
+    const whatsappUrl = `https://wa.me/${patient.mobile.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    
+    toast({
+      title: "Reminder Sent",
+      description: `Reminder sent to ${patient.full_name}`,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Header */}
@@ -199,8 +241,12 @@ const Reception = () => {
                 <p className="text-sm text-muted-foreground">Patient Management</p>
               </div>
             </div>
-            <Button variant="ghost" onClick={() => navigate('/')}>
-              Back to Home
+            <Button variant="ghost" onClick={async () => {
+              await signOut();
+              navigate('/');
+            }}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
             </Button>
           </div>
         </div>
@@ -209,7 +255,7 @@ const Reception = () => {
       {/* Main Content */}
       <div className="container mx-auto px-6 py-8">
         {/* Stats Cards */}
-        <div className="grid md:grid-cols-4 gap-4 mb-6">
+        <div className="grid md:grid-cols-5 gap-4 mb-6">
           <Card className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -225,22 +271,31 @@ const Reception = () => {
                 <p className="text-sm text-muted-foreground">Active</p>
                 <p className="text-2xl font-bold">{patients.filter(p => !p.is_discharged).length}</p>
               </div>
-              <UserPlus className="w-8 h-8 text-secondary" />
+              <UserPlus className="w-8 h-8 text-green-500" />
             </div>
           </Card>
           <Card className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Discharged</p>
-                <p className="text-2xl font-bold">{patients.filter(p => p.is_discharged).length}</p>
+                <p className="text-sm text-muted-foreground">Appointments Today</p>
+                <p className="text-2xl font-bold">{appointmentsToday}</p>
               </div>
-              <Download className="w-8 h-8 text-muted-foreground" />
+              <Calendar className="w-8 h-8 text-blue-500" />
             </div>
           </Card>
           <Card className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Today</p>
+                <p className="text-sm text-muted-foreground">Discharges Today</p>
+                <p className="text-2xl font-bold">{dischargesToday}</p>
+              </div>
+              <Download className="w-8 h-8 text-orange-500" />
+            </div>
+          </Card>
+          <Card className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">New Today</p>
                 <p className="text-2xl font-bold">
                   {patients.filter(p => 
                     new Date(p.created_at).toDateString() === new Date().toDateString()
@@ -307,6 +362,8 @@ const Reception = () => {
           patients={filteredPatients}
           isLoading={isLoading}
           onRefresh={fetchPatients}
+          onWhatsAppClick={sendWhatsAppConfirmation}
+          onReminderClick={sendManualReminder}
         />
       </div>
 

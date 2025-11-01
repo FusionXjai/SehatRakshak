@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,11 +21,7 @@ const DoctorDashboard = () => {
   const [doctorId, setDoctorId] = useState<string | null>(null);
   const [isAddPatientOpen, setIsAddPatientOpen] = useState(false);
 
-  useEffect(() => {
-    fetchDoctorData();
-  }, [user]);
-
-  const fetchDoctorData = async () => {
+  const fetchDoctorData = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -50,11 +46,11 @@ const DoctorDashboard = () => {
 
       setDoctorId(doctorProfileId);
 
-      // Get assigned patients
+      // Get assigned patients - use user.id since assigned_doctor_id references auth.users(id)
       const { data: patientsData, error: patientsError } = await supabase
         .from('patients')
         .select('*')
-        .eq('assigned_doctor_id', doctorProfileId)
+        .eq('assigned_doctor_id', user.id) // Use user.id instead of doctorProfileId
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
@@ -69,7 +65,54 @@ const DoctorDashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, toast]);
+
+  useEffect(() => {
+    fetchDoctorData();
+    
+    // Set up real-time subscription for patient changes
+    const subscription = supabase
+      .channel('patient-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'patients',
+          filter: user ? `assigned_doctor_id=eq.${user.id}` : undefined
+        },
+        (payload) => {
+          console.log('Real-time patient change detected:', payload);
+          
+          if (payload.eventType === 'INSERT') {
+            // New patient assigned to this doctor
+            const newPatient = payload.new as Patient;
+            setPatients(prev => [newPatient, ...prev]);
+            
+            toast({
+              title: "New Patient Assigned",
+              description: `${newPatient.full_name} has been assigned to you`,
+            });
+          } else if (payload.eventType === 'UPDATE') {
+            // Patient data updated
+            const updatedPatient = payload.new as Patient;
+            setPatients(prev => 
+              prev.map(p => p.id === updatedPatient.id ? updatedPatient : p)
+            );
+          } else if (payload.eventType === 'DELETE') {
+            // Patient removed
+            const deletedPatient = payload.old as Patient;
+            setPatients(prev => prev.filter(p => p.id !== deletedPatient.id));
+          }
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [user, fetchDoctorData, toast]);
 
   const handleLogout = async () => {
     await signOut();
@@ -207,7 +250,7 @@ const DoctorDashboard = () => {
       <AddPatientDialog 
         open={isAddPatientOpen} 
         onOpenChange={setIsAddPatientOpen}
-        autoAssignDoctorId={doctorId || undefined}
+        autoAssignDoctorId={user?.id} // Use user.id since assigned_doctor_id references auth.users(id)
         onSuccess={() => {
           setIsAddPatientOpen(false);
           fetchDoctorData();
